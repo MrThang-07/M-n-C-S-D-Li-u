@@ -68,3 +68,23 @@ INSERT INTO bookings (showtime_id, customer_name, phone) VALUES
 (4, 'Tran Thi H', '0908901234'),
 (5, 'Le Van I', '0909012345'),
 (5, 'Pham Thi K', '0910123456');
+
+-- ===== XỬ LÝ YÊU CẦU =====
+
+-- 1. Phòng 1 chuyển sang bảo trì
+UPDATE rooms
+SET status = 'maintenance'
+WHERE id = 1;
+
+-- 2. Chuyển toàn bộ lịch chiếu từ phòng 1 sang phòng 2
+UPDATE showtimes
+SET room_id = 2
+WHERE room_id = 1;
+
+-- 3. Hủy vé khách có SĐT 0987654321
+DELETE FROM bookings
+WHERE phone = '0987654321';
+
+-- 4. Xóa phim id = 3 (tự động xóa liên quan nhờ CASCADE)
+DELETE FROM movies
+WHERE id = 3;
