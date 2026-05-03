@@ -71,20 +71,41 @@ INSERT INTO bookings (showtime_id, customer_name, phone) VALUES
 
 -- ===== XỬ LÝ YÊU CẦU =====
 
--- 1. Phòng 1 chuyển sang bảo trì
 UPDATE rooms
 SET status = 'maintenance'
 WHERE id = 1;
 
--- 2. Chuyển toàn bộ lịch chiếu từ phòng 1 sang phòng 2
 UPDATE showtimes
 SET room_id = 2
 WHERE room_id = 1;
 
--- 3. Hủy vé khách có SĐT 0987654321
 DELETE FROM bookings
 WHERE phone = '0987654321';
 
--- 4. Xóa phim id = 3 (tự động xóa liên quan nhờ CASCADE)
 DELETE FROM movies
 WHERE id = 3;
+
+-- ===== TRUY VẤN =====
+
+-- 1. Phim có thời lượng từ 90 đến 120 phút
+SELECT *
+FROM movies
+WHERE duration_minutes BETWEEN 90 AND 120;
+
+-- 2. Vé của lịch chiếu id = 2 (mới nhất lên đầu)
+SELECT *
+FROM bookings
+WHERE showtime_id = 2
+ORDER BY booking_date DESC;
+
+-- 3. Phim 18+ hoặc thời lượng > 150 phút
+SELECT *
+FROM movies
+WHERE age_restriction = 18 OR duration_minutes > 150;
+
+-- 4. Lịch chiếu giá > 100000 trong tháng hiện tại
+SELECT *
+FROM showtimes
+WHERE ticket_price > 100000
+AND MONTH(show_time) = MONTH(CURRENT_DATE())
+AND YEAR(show_time) = YEAR(CURRENT_DATE());
