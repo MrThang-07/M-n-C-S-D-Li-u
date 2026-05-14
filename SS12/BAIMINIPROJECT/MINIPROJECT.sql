@@ -1,40 +1,42 @@
 CREATE DATABASE StudentDB;
 USE StudentDB;
 
--- 1. Bảng Khoa
 CREATE TABLE Department (
     DeptID VARCHAR(5) PRIMARY KEY,
     DeptName VARCHAR(50) NOT NULL
 );
 
--- 2. Bảng SinhVien
 CREATE TABLE Student (
     StudentID VARCHAR(6) PRIMARY KEY,
     FullName VARCHAR(50),
     Gender VARCHAR(10),
     BirthDate DATE,
     DeptID VARCHAR(5),
-    FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+
+    FOREIGN KEY (DeptID)
+    REFERENCES Department(DeptID)
 );
 
--- 3. Bảng MonHoc
 CREATE TABLE Course (
     CourseID VARCHAR(6) PRIMARY KEY,
     CourseName VARCHAR(50),
     Credits INT
 );
 
--- 4. Bảng DangKy
 CREATE TABLE Enrollment (
     StudentID VARCHAR(6),
     CourseID VARCHAR(6),
-    Score DECIMAL(4,2), 
+    Score DECIMAL(4,2),
+
     PRIMARY KEY (StudentID, CourseID),
-    FOREIGN KEY (StudentID) REFERENCES Student(StudentID),
-    FOREIGN KEY (CourseID) REFERENCES Course(CourseID)
+
+    FOREIGN KEY (StudentID)
+    REFERENCES Student(StudentID),
+
+    FOREIGN KEY (CourseID)
+    REFERENCES Course(CourseID)
 );
 
--- Chèn dữ liệu mẫu
 INSERT INTO Department VALUES
 ('IT','Information Technology'),
 ('BA','Business Administration'),
@@ -70,40 +72,85 @@ INSERT INTO Enrollment VALUES
 ('S00002','C00005',9.1),
 ('S00005','C00005',8.9),
 ('S00008','C00002',9.3);
--- CÂU 1 -- 
-CREATE VIEW ViewStudentBasic AS
-SELECT s.StudentID, s.FullName, d.DeptName FROM Student s
-JOIN Department d
-ON s.DeptID = d.DeptID ;
 
-SELECT * FROM  ViewStudentBasic ;
--- CÂU 2 --
-CREATE INDEX idxFullName ON Student(FullName);
--- CÂU 3 -- 
+CREATE VIEW ViewStudentBasic AS
+
+SELECT 
+    s.StudentID,
+    s.FullName,
+    d.DeptName
+
+FROM Student s
+
+JOIN Department d
+ON s.DeptID = d.DeptID;
+
+SELECT * FROM ViewStudentBasic;
+
+CREATE INDEX idxFullName
+ON Student(FullName);
+
 DELIMITER $$
+
 CREATE PROCEDURE GetStudentsIT()
+
 BEGIN
-	SELECT s.*, d.DeptName FROM Student s
+
+    SELECT 
+        s.*,
+        d.DeptName
+
+    FROM Student s
+
     JOIN Department d
     ON s.DeptID = d.DeptID
-    WHERE DeptName = 'Information Technology';
-END $$ 
+
+    WHERE d.DeptName = 'Information Technology';
+
+END $$
+
 DELIMITER ;
 
 CALL GetStudentsIT();
 
--- CAU 4 -- 
 DROP VIEW IF EXISTS ViewStudentCountByDept;
-CREATE VIEW ViewStudentCountByDept AS 
-SELECT d.DeptName, COUNT(s.StudentID) AS TotalStudents FROM Department d 
+
+CREATE VIEW ViewStudentCountByDept AS
+
+SELECT 
+    d.DeptName,
+    COUNT(s.StudentID) AS TotalStudents
+
+FROM Department d
+
 LEFT JOIN Student s
 ON s.DeptID = d.DeptID
+
 GROUP BY d.DeptName;
 
+SELECT * FROM ViewStudentCountByDept;
 
-SELECT * FROM  ViewStudentCountByDept;
+SELECT *
+FROM ViewStudentCountByDept
+ORDER BY TotalStudents DESC
+LIMIT 1;
 
-SELECT DeptName FROM  ViewStudentCountByDept
-ORDER BY DeptName DESC 
-LIMIT 1 ;
--- CAU 5 -- 
+DELIMITER $$
+
+CREATE PROCEDURE GetStudentsPaging(
+    IN p_limit INT,
+    IN p_offset INT
+)
+
+BEGIN
+
+    SELECT *
+    FROM Student
+
+    LIMIT p_limit OFFSET p_offset;
+
+END $$
+
+DELIMITER ;
+
+CALL GetStudentsPaging(3,0);
